@@ -91,6 +91,51 @@ class RetrievalSeq2seqDatasetForBert(torch.utils.data.Dataset):
         return source_ids, target_ids, num_source_tokens, num_target_tokens
 
 
+class RetrievalSeq2seqDocDatasetForBert(torch.utils.data.Dataset):
+    def __init__(
+            self, features, max_source_len, max_target_len,
+            vocab_size, cls_id, sep_id, pad_id, mask_id,
+            random_prob, keep_prob, offset, num_training_instances, 
+            span_len=1, span_prob=1.0):
+        self.features = features
+        self.max_source_len = max_source_len
+        self.max_target_len = max_target_len
+        self.offset = offset
+        if offset > 0:
+            logger.info("  ****  Set offset %d in Seq2seqDatasetForBert ****  ", offset)
+        self.cls_id = cls_id
+        self.sep_id = sep_id
+        self.pad_id = pad_id
+        self.random_prob = random_prob
+        self.keep_prob = keep_prob
+        self.mask_id = mask_id
+        self.vocab_size = vocab_size
+        self.num_training_instances = num_training_instances
+        self.span_len = span_len
+        self.span_prob = span_prob
+
+    def __len__(self):
+        return int(self.num_training_instances)
+
+    def __trunk(self, ids, max_len):
+        if len(ids) > max_len - 1:
+            ids = ids[:max_len - 1]
+        ids = ids + [self.sep_id]
+        return ids
+
+    def __pad(self, ids, max_len):
+        if len(ids) < max_len:
+            return ids + [self.pad_id] * (max_len - len(ids))
+        else:
+            assert len(ids) == max_len
+            return ids
+
+    def __getitem__(self, idx):
+        idx = (self.offset + idx) % len(self.features)
+        feature = self.features[idx]
+        source_ids = self.__trunk([self.cls_id] + feature["input_ids"], self.max_source_len)
+        
+        return source_ids
 
 class Seq2seqDatasetForBert(torch.utils.data.Dataset):
     def __init__(

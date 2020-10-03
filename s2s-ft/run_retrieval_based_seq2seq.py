@@ -146,7 +146,7 @@ def train(args, training_features, doc_features, model, tokenizer):
 
     # build documents embeds
     logger.info("Building embeds for %d documents" % len(doc_features))
-    doc_dataset = utils.RetrievalSeq2seqDatasetForBert(
+    doc_dataset = utils.RetrievalSeq2seqDocDatasetForBert(
         features=doc_features, max_source_len=args.max_source_seq_length,
         max_target_len=args.max_target_seq_length, vocab_size=tokenizer.vocab_size,
         cls_id=tokenizer.cls_token_id, sep_id=tokenizer.sep_token_id, pad_id=tokenizer.pad_token_id,
