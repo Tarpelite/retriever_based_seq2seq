@@ -137,6 +137,7 @@ class RetrievalSeq2seqDocDatasetForBert(torch.utils.data.Dataset):
         target_ids = self.__trunk([self.cls_id] + [0], self.max_source_len)
         source_ids = self.__pad(source_ids, self.max_source_len)
         target_ids = self.__pad(target_ids, self.max_target_len)
+        print(source_ids)
         return source_ids, target_ids
 
 class Seq2seqDatasetForBert(torch.utils.data.Dataset):
@@ -267,6 +268,7 @@ def load_and_cache_examples(
             else:
                 source_tokens = tokenizer.tokenize(example["src"])
                 target_tokens = tokenizer.tokenize(example["tgt"])
+                
             features.append({
                     "source_ids": tokenizer.convert_tokens_to_ids(source_tokens),
                     "target_ids": tokenizer.convert_tokens_to_ids(target_tokens),

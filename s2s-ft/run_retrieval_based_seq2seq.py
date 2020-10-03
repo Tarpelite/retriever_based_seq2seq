@@ -173,7 +173,7 @@ def train(args, training_features, doc_features, model, tokenizer):
     if hasattr(model, "module"):
         model.module.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
 
-        model.module.retrieval.build_indexs_from_embeds(model.retrieval.doc_embeds)
+        model.module.retrieval.build_indexs_from_embeds(model.module.retrieval.doc_embeds)
     else:
         model.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
 
