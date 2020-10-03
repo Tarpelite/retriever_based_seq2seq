@@ -628,7 +628,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         outputs = self.bert(
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,inputs_embeds=inputs_embeds,
             position_ids=position_ids, split_lengths=split_lengths)
-        pooler_output = outputs[0][:,0,:].contiguous().view(-1) #[batch_size, hidden_size]
+        pooler_output = outputs[0][:,0,:].contiguous().view(-1, self.config.hidden_size) #[batch_size, hidden_size]
         _, I = self.indexs.search(pooler_output.detach().cpu().numpy(), top_k)
         I = I[:top_k]
         relevant_doc_embeds = torch.stack([self.doc_embeds[x] for x in I])
