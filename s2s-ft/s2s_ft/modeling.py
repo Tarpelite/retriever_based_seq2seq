@@ -606,7 +606,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         if torch.cuda.is_available():
             res = faiss.StandardGpuResources()
             indexs_IP = faiss.index_cpu_to_gpu(res, 0, indexs_IP)
-        indexs_IP.add(doc_embeds)
+        indexs_IP.add(doc_embeds.numpy())
         self.indexs = indexs_IP
         return indexs_IP
     
