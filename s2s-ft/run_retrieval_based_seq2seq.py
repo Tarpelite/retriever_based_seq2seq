@@ -139,7 +139,10 @@ def train(args, training_features, doc_features, model, tokenizer):
         offset=train_batch_size * global_step, num_training_instances=train_batch_size * args.num_training_steps,
     )
 
-    model.concator = concator
+    if hasattr(model, "module"):
+        model.module.concator = concator
+    else:
+        model.concator = concator
 
     # build documents embeds
     logger.info("Building embeds for %d documents" % len(doc_features))
@@ -167,12 +170,17 @@ def train(args, training_features, doc_features, model, tokenizer):
             "input_ids": batch[0]
         }
         with torch.no_grad():
-            embeds = model.retrieval.get_embeds(inputs)
+            embeds = model.module.retrieval.get_embeds(inputs) if hasattr(model, "module") else model.retrieval.get_embeds(inputs)
         all_embdes.extend(embeds.detach().cpu().numpy().to_list())
     
-    model.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
+    if hasattr(model, "module"):
+        model.module.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
 
-    model.retrieval.build_indexs_from_embeds(model.retrieval.doc_embeds)
+        model.module.retrieval.build_indexs_from_embeds(model.retrieval.doc_embeds)
+    else:
+        model.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
+
+        model.retrieval.build_indexs_from_embeds(model.retrieval.doc_embeds)
 
     logger.info("start training")
 
