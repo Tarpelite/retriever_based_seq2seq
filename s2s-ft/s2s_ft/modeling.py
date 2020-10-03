@@ -632,10 +632,10 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         pooler_output = outputs[0][:,0,:].contiguous().view(-1, self.config.hidden_size) #[batch_size, hidden_size]
         _, I = self.indexs.search(pooler_output.detach().cpu().numpy(), top_k)
         I = I[:top_k]
-        relevant_doc_embeds = torch.from_numpy([self.doc_embeds[x] for x in I]).to(input_ids.device)
+        relevant_doc_embeds = torch.stack([torch.from_numpy(self.doc_embeds[x]) for x in I]).to(input_ids.device)
         relevant_distance = torch.bmm(relevant_doc_embeds, pooler_output.unsqueeze(-1)).squeeze(-1) # do Inner Product
         relevant_scores = self.softmax(relevant_distance)
-        relevant_doc_features = torch.from_numpy([self.features[x]["input_ids"] for x in I]).to(input_ids.device)
+        relevant_doc_features = torch.stack([torch.from_numpy(self.features[x]["input_ids"]) for x in I]).to(input_ids.device)
         return relevant_scores, I, relevant_doc_features
 
 
