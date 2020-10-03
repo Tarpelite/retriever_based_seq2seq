@@ -438,7 +438,7 @@ def get_model_and_tokenizer(args):
         args.model_name_or_path, config=config, model_type=args.model_type,
         reuse_position_embedding=True,
         cache_dir=args.cache_dir if args.cache_dir else None)
-    concator = utils.concator()
+
     model = BertForRetrievalSeq2Seq.from_pretrained(
         args.model_name_or_path, config=config, model_type=args.model_type,
         reuse_position_embedding=True, retrieval=retrieval,
