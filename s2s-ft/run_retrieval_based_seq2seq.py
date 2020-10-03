@@ -262,6 +262,7 @@ def train(args, training_features, doc_features, model, tokenizer):
                     model_to_save = model.module if hasattr(model, "module") else model
                     model_to_save.save_pretrained(save_path)
                     
+                    
                     # optim_to_save = {
                     #     "optimizer": optimizer.state_dict(),
                     #     "lr_scheduler": scheduler.state_dict(),

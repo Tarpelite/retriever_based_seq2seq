@@ -16,7 +16,7 @@ from transformers.modeling_bert import BERT_PRETRAINED_MODEL_ARCHIVE_MAP
 from transformers.modeling_distilbert import DISTILBERT_PRETRAINED_MODEL_ARCHIVE_MAP
 from transformers.modeling_xlm_roberta import XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP
 
-from utils import Concator
+from .utils import Concator
 from s2s_ft.config import BertForSeq2SeqConfig
 from s2s_ft.convert_state_dict import get_checkpoint_from_transformer_cache, state_dict_convert
 import faiss
@@ -608,7 +608,12 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         indexs_IP.add(doc_embeds)
         self.indexs = indexs_IP
         return indexs_IP
-
+    
+    def get_embeds(self, input_ids):
+        outputs = self.bert(
+            input_ids)
+        pooler_output = outputs[1]
+        return pooler_output
         
     
         
