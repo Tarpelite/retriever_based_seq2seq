@@ -610,6 +610,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         self.doc_embeds = doc_embeds.view(-1, self.config.hidden_size).cpu().numpy()
         indexs_IP.add(self.doc_embeds)  
         self.indexs = indexs_IP
+        self.features = self.features.numpy()
         return indexs_IP
     
     def get_embeds(self, input_ids):
