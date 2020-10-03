@@ -615,6 +615,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
             input_ids)
         # print(len(outputs))
         # print(outputs.shape)
+        print(outputs)
         pooler_output = outputs[1]
         return pooler_output
         
