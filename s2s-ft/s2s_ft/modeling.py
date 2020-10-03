@@ -396,7 +396,8 @@ class BertModel(BertPreTrainedForSeq2SeqModel):
 
         if attention_mask is None:
             attention_mask = torch.ones(input_shape, device=device)
-            extended_attention_mask = attention_mask[:, None, None, :]
+            print(attention_mask.shape)
+            # extended_attention_mask = attention_mask[:, None, None, :]
         # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
         # ourselves in which case we just need to make it broadcastable to all heads.
         if attention_mask.dim() == 3:
