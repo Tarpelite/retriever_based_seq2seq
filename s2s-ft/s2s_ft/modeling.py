@@ -613,8 +613,8 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
     def get_embeds(self, input_ids):
         outputs = self.bert(
             input_ids)
-        print(len(outputs))
-        print(outputs.shape)
+        # print(len(outputs))
+        # print(outputs.shape)
         pooler_output = outputs[1]
         return pooler_output
         
