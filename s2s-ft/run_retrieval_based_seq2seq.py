@@ -166,11 +166,8 @@ def train(args, training_features, doc_features, model, tokenizer):
     model.zero_grad()
     for step, batch in enumerate(doc_iterator):
         batch = tuple(t.to(args.device) for t in batch)
-        inputs = {
-            "input_ids": batch[0]
-        }
         with torch.no_grad():
-            embeds = model.module.retrieval.get_embeds(inputs) if hasattr(model, "module") else model.retrieval.get_embeds(inputs)
+            embeds = model.module.retrieval.get_embeds(batch[0]) if hasattr(model, "module") else model.retrieval.get_embeds(batch[0])
         all_embdes.extend(embeds.detach().cpu().numpy().to_list())
     
     if hasattr(model, "module"):
