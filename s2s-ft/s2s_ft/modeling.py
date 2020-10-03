@@ -688,7 +688,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         return (true_tokens_mask | pseudo_tokens_mask).type_as(source_mask)
 
     
-    def forward(self, source_ids, target_ids, pseudo_ids, num_source_tokens, num_target_tokens, target_span_ids=None):
+    def forward(self, source_ids, target_ids, num_source_tokens, num_target_tokens,pseudo_ids=None, target_span_ids=None):
         # note that here the source ids must not include any pseudo labels
         relevant_scores, _, relevant_doc_features = self.retrieval(
             input_ids = source_ids
