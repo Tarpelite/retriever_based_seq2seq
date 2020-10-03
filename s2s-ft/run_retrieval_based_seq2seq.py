@@ -159,7 +159,7 @@ def train(args, training_features, doc_features, model, tokenizer):
             doc_dataloader, initial=global_step,
             desc="Embeding docs:", disable=args.local_rank not in [-1, 0])
     all_embdes = []
-    model.retrieval.eval()
+    model.eval()
     model.zero_grad()
     for step, batch in enumerate(doc_iterator):
         batch = tuple(t.to(args.device) for t in batch)
