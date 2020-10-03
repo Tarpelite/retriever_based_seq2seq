@@ -471,7 +471,7 @@ def main():
     )
 
     doc_features = utils.load_and_cache_doc_examples(
-        example_file=args.train_doc_file, tokenizer=tokenizer, local_rank=args.local_rank, cached_features_file=args.cached_train_doc_features_file)
+        example_file=args.train_doc_file, tokenizer=tokenizer, local_rank=args.local_rank, cached_doc_features_file=args.cached_train_doc_features_file)
     
     model.retrieval.features = doc_features
 
