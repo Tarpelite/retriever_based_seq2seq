@@ -602,7 +602,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
     def build_indexs_from_embeds(self, doc_embeds):
         d = self.config.hidden_size
         print("Building indexs")
-        indexs_IP=faiss.IndexFlatInnerProduct(d)
+        indexs_IP=faiss.IndexFlatIP(d)
         if torch.cuda.is_available():
             res = faiss.StandardGpuResources()
             indexs_IP = faiss.index_cpu_to_gpu(res, 0, indexs_IP)
