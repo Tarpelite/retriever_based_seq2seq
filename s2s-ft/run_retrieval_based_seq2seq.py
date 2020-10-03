@@ -18,7 +18,7 @@ except:
 
 import tqdm
 
-from s2s_ft.modeling import BertForRetrievalSeq2seq, BertForRetrieval
+from s2s_ft.modeling import BertForRetrievalSeq2Seq, BertForRetrieval
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import \
     RobertaConfig, BertConfig, \
@@ -261,7 +261,7 @@ def train(args, training_features, doc_features, model, tokenizer):
                     os.makedirs(save_path, exist_ok=True)
                     model_to_save = model.module if hasattr(model, "module") else model
                     model_to_save.save_pretrained(save_path)
-                    
+
                     
                     # optim_to_save = {
                     #     "optimizer": optimizer.state_dict(),
@@ -439,7 +439,7 @@ def get_model_and_tokenizer(args):
         reuse_position_embedding=True,
         cache_dir=args.cache_dir if args.cache_dir else None)
     concator = utils.concator()
-    model = BertForRetrieval.from_pretrained(
+    model = BertForRetrievalSeq2Seq.from_pretrained(
         args.model_name_or_path, config=config, model_type=args.model_type,
         reuse_position_embedding=True, retrieval=retrieval,
         cache_dir=args.cache_dir if args.cache_dir else None)
