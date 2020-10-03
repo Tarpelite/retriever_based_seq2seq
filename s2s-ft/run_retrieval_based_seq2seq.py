@@ -155,7 +155,7 @@ def train(args, training_features, doc_features, model, tokenizer):
     )
     doc_sampler = SequentialSampler(doc_dataset)
     doc_dataloader = DataLoader(
-            train_dataset, sampler=doc_sampler,
+            doc_dataset, sampler=doc_sampler,
             batch_size=per_node_train_batch_size // args.gradient_accumulation_steps,
             collate_fn=utils.batch_list_to_batch_tensors)
     doc_iterator = tqdm.tqdm(
