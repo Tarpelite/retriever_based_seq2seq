@@ -183,7 +183,7 @@ def train(args, training_features, doc_features, model, tokenizer):
 
     logger.info("Check dataset:")
     for i in range(5):
-        source_ids, target_ids, pseudo_ids, num_source_tokens, num_target_tokens = train_dataset.__getitem__(i)
+        source_ids, target_ids, num_source_tokens, num_target_tokens = train_dataset.__getitem__(i)
         logger.info("Instance-%d" % i)
         logger.info("Source tokens = %s" % " ".join(tokenizer.convert_ids_to_tokens(source_ids)))
         logger.info("Target tokens = %s" % " ".join(tokenizer.convert_ids_to_tokens(target_ids)))
@@ -224,9 +224,9 @@ def train(args, training_features, doc_features, model, tokenizer):
             batch = tuple(t.to(args.device) for t in batch)
             inputs = {'source_ids': batch[0],
                       'target_ids': batch[1],
-                      'pseudo_ids': batch[2],
-                      'num_source_tokens': batch[3],
-                      'num_target_tokens': batch[4]}
+                    #   'pseudo_ids': batch[2],
+                      'num_source_tokens': batch[2],
+                      'num_target_tokens': batch[3]}
             loss = model(**inputs)
             if args.n_gpu > 1:
                 loss = loss.mean()  # mean() to average on multi-gpu parallel (not distributed) training
