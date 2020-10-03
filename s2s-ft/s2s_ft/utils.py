@@ -136,7 +136,7 @@ class RetrievalSeq2seqDocDatasetForBert(torch.utils.data.Dataset):
         source_ids = self.__trunk([self.cls_id] + feature["input_ids"], self.max_source_len)
         target_ids = self.__trunk([self.cls_id] + [0], self.max_source_len)
         source_ids = self.__pad(source_ids, self.max_source_len)
-        target_ids = self.__pad(target_ids, self.max_len)
+        target_ids = self.__pad(target_ids, self.max_target_len)
         return source_ids, target_ids
 
 class Seq2seqDatasetForBert(torch.utils.data.Dataset):
