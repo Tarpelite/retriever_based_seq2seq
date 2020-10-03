@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 import math
 import os
-
+from tqdm import tqdm
 import torch
 from torch import nn
 from torch.nn.modules.loss import _Loss
@@ -16,8 +16,10 @@ from transformers.modeling_bert import BERT_PRETRAINED_MODEL_ARCHIVE_MAP
 from transformers.modeling_distilbert import DISTILBERT_PRETRAINED_MODEL_ARCHIVE_MAP
 from transformers.modeling_xlm_roberta import XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP
 
+from utils import Concator
 from s2s_ft.config import BertForSeq2SeqConfig
 from s2s_ft.convert_state_dict import get_checkpoint_from_transformer_cache, state_dict_convert
+import faiss
 
 logger = logging.getLogger(__name__)
 
@@ -584,3 +586,161 @@ class BertForSequenceToSequence(BertPreTrainedForSeq2SeqModel):
             masked_lm_loss.float(), target_mask)
 
         return pseudo_lm_loss
+
+class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
+    def __init__(self, config, indexs=None, doc_embeds=None, features=None):
+        super(BertForRetrieval, self).__init__(config)
+        self.bert = BertModel(config)
+        self.init_weights()
+        self.indexs = indexs
+        self.doc_embeds = doc_embeds
+        self.features = features
+        self.softmax = torch.nn.Softmax(dim=-1)
+        self.config = config
+    
+    def build_indexs_from_embeds(self, doc_embeds):
+        d = self.config.hidden_size
+        print("Building indexs")
+        indexs_IP=faiss.IndexFlatInnerProduct(d)
+        if torch.cuda.is_available():
+            res = faiss.StandardGpuResources()
+            indexs_IP = faiss.index_cpu_to_gpu(res, 0, indexs_IP)
+        indexs_IP.add(doc_embeds)
+        self.indexs = indexs_IP
+        return indexs_IP
+
+        
+    
+        
+    def forward(self, input_ids, attention_mask=None, token_type_ids =None, position_ids=None, inputs_embeds=None, split_lengths=None, top_k=5):
+        outputs = self.bert(
+            input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,inputs_embeds=inputs_embeds,
+            position_ids=position_ids, split_lengths=split_lengths)
+        pooler_output = outputs[1] #[batch_size, hidden_size]
+        _, I = self.indexs.search(pooler_output.numpy(), top_k)
+        I = I[:top_k]
+        relevant_doc_embeds = torch.stack([self.doc_embeds[x] for x in I])
+        relevant_distance = torch.bmm(relevant_doc_embeds, pooler_output.unsqueeze(-1)).squeeze(-1) # do Inner Product
+        relevant_scores = self.softmax(relevant_distance)
+        relevant_doc_features = torch.stack([self.features[x]["input_ids"] for x in I])
+        return relevant_scores, I, relevant_doc_features
+
+
+
+class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
+    def __init__(self, config, retrieval:BertForRetrieval, concator:Concator, top_k=5) -> None:
+        super(BertForRetrievalSeq2Seq, self).__init__(config)
+        self.retrieval = retrieval
+        self.concator = concator
+        self.top_k = top_k
+        self.bert = BertModel(config)
+        self.cls = BertOnlyMLMHead(config, self.bert.embeddings.word_embeddings.weight)
+
+
+        self.log_softmax = nn.LogSoftmax()
+
+        self.source_type_ids = config.source_type_id
+        self.target_type_id = config.target_type_id
+
+        if config.label_smoothing > 0:
+            self.crit_mask_lm_smoothed = LabelSmoothingLoss(
+                config.label_smoothing, config.vocab_size, ignore_index=0,
+                reduction="none"
+            )
+            self.crit_mask_lm = None
+        else:
+            self.crit_mask_lm_smoothed = None
+            self.crit_mask_lm = nn.CrossEntropyLoss(reduction="none")
+
+    @staticmethod
+    def create_mask_and_position_ids(num_tokens, max_len, offset=None):
+        base_position_matrix = torch.arange(
+            0, max_len, dtype=num_tokens.dtype, device=num_tokens.device).view(1, -1)
+        mask = (base_position_matrix < num_tokens.view(-1, 1)).type_as(num_tokens)
+        if offset is not None:
+            base_position_matrix = base_position_matrix + offset.view(-1, 1)
+        position_ids = base_position_matrix * mask
+        return mask, position_ids
+    
+    @staticmethod
+    def create_attention_mask(source_mask, target_mask, source_position_ids, target_span_ids):
+        weight = torch.cat((torch.zeros_like(source_position_ids), target_span_ids, -target_span_ids), dim=1)
+        from_weight = weight.unsqueeze(-1)
+        to_weight = weight.unsqueeze(1)
+
+        true_tokens = (0 <= to_weight) & (torch.cat((source_mask, target_mask, target_mask), dim=1) == 1).unsqueeze(1)
+        true_tokens_mask = (from_weight >= 0) & true_tokens & (to_weight <= from_weight)
+        pseudo_tokens_mask = (from_weight < 0) & true_tokens & (-to_weight > from_weight)
+        pseudo_tokens_mask = pseudo_tokens_mask | ((from_weight < 0) & (to_weight == from_weight))
+
+        return (true_tokens_mask | pseudo_tokens_mask).type_as(source_mask)
+
+    
+    def forward(self, source_ids, target_ids, pseudo_ids, num_source_tokens, num_target_tokens, target_span_ids=None):
+        # note that here the source ids must not include any pseudo labels
+        relevant_scores, _, relevant_doc_features = self.retrieval(
+            input_ids = source_ids
+        )
+        # reconstruct source ids and target_ids
+        
+        source_ids, target_ids, pseudo_ids, num_source_tokens, num_target_tokens = self.concator.concate(source_ids, relevant_doc_features, target_ids, num_source_tokens, num_target_tokens)
+        source_len = source_ids.size(1)
+        target_len = target_ids.size(1)
+        pseudo_len = pseudo_ids.size(1)
+        assert target_len == pseudo_len
+        assert source_len > 0 and target_len > 0
+        split_lengths = (source_len, target_len, pseudo_len)
+        input_ids = torch.cat((source_ids, target_ids, pseudo_ids), dim=1)
+        token_type_ids = torch.cat(
+            (torch.ones_like(source_ids) * self.source_type_id,
+             torch.ones_like(target_ids) * self.target_type_id,
+             torch.ones_like(pseudo_ids) * self.target_type_id), dim=1)
+
+        source_mask, source_position_ids = \
+            self.create_mask_and_position_ids(num_source_tokens, source_len)
+        target_mask, target_position_ids = \
+            self.create_mask_and_position_ids(num_target_tokens, target_len, offset=num_source_tokens)
+        position_ids = torch.cat((source_position_ids, target_position_ids, target_position_ids), dim=1)
+        if target_span_ids is None:
+            target_span_ids = target_position_ids
+        attention_mask = self.create_attention_mask(source_mask, target_mask, source_position_ids, target_span_ids)
+        outputs = self.bert(
+            input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
+            position_ids=position_ids, split_lengths=split_lengths)
+        sequence_output = outputs[0] # [batch_size * top_k ,sequence_length, embeddings]
+        pseudo_sequence_output = sequence_output[:, source_len + target_len:, ] #[batch_size * top_k, sequence_length, embeddings]
+        def loss_mask_and_normalize(loss, mask):
+            mask = mask.type_as(loss)
+            loss = loss * mask
+            denominator = torch.sum(mask) + 1e-5
+            return (loss / denominator).sum()
+        
+        # make prediction based on sofmax relevant scores
+        pseudo_sequence_output = pseudo_sequence_output.view(relevant_scores.size(0), self.top_k,pseudo_sequence_output.size(1), -1)
+        pseudo_sequence_output = torch.bmm(relevant_scores.unsqueeze(1), pseudo_sequence_output)
+        prediction_scores_masked = self.cls(pseudo_sequence_output)
+        if self.crit_mask_lm_smoothed:
+            masked_lm_loss = self.crit_mask_lm_smoothed(
+                F.log_softmax(prediction_scores_masked.float(), dim=-1), target_ids)
+        else:
+            masked_lm_loss = self.crit_mask_lm(
+                prediction_scores_masked.transpose(1, 2).float(), target_ids)
+        pseudo_lm_loss = loss_mask_and_normalize(
+            masked_lm_loss.float(), target_mask)
+        
+        return pseudo_lm_loss
+
+
+
+
+
+
+
+
+        
+        
+
+
+
+
+        
