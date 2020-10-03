@@ -115,7 +115,7 @@ class RetrievalSeq2seqDocDatasetForBert(torch.utils.data.Dataset):
         self.span_prob = span_prob
 
     def __len__(self):
-        return int(self.features)
+        return len(self.features)
 
     def __trunk(self, ids, max_len):
         if len(ids) > max_len - 1:
