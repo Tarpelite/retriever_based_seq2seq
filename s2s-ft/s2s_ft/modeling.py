@@ -607,7 +607,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
             res = faiss.StandardGpuResources()
             indexs_IP = faiss.index_cpu_to_gpu(res, 0, indexs_IP)
         print(doc_embeds.shape)
-        indexs_IP.add(doc_embeds.view(-1, self.config.hidden_size).numpy())
+        indexs_IP.add(doc_embeds.view(-1, self.config.hidden_size).cpu().numpy())
         self.indexs = indexs_IP
         return indexs_IP
     
@@ -629,7 +629,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,inputs_embeds=inputs_embeds,
             position_ids=position_ids, split_lengths=split_lengths)
         pooler_output = outputs[0][:,0,:].contiguous().view(-1) #[batch_size, hidden_size]
-        _, I = self.indexs.search(pooler_output.numpy(), top_k)
+        _, I = self.indexs.search(pooler_output.cpu().numpy(), top_k)
         I = I[:top_k]
         relevant_doc_embeds = torch.stack([self.doc_embeds[x] for x in I])
         relevant_distance = torch.bmm(relevant_doc_embeds, pooler_output.unsqueeze(-1)).squeeze(-1) # do Inner Product
