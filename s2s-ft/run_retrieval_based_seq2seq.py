@@ -476,7 +476,7 @@ def main():
     model.retrieval.features = doc_features
 
 
-    train(args, training_features, model, tokenizer)
+    train(args, training_features, doc_features, model, tokenizer)
 
 
 if __name__ == "__main__":
