@@ -168,7 +168,7 @@ def train(args, training_features, doc_features, model, tokenizer):
         batch = tuple(t.to(args.device) for t in batch)
         with torch.no_grad():
             embeds = model.module.retrieval.get_embeds(batch[0]) if hasattr(model, "module") else model.retrieval.get_embeds(batch[0])
-        all_embdes.extend(embeds.detach().cpu().tolist())
+        all_embdes.extend(embeds.view(-1, 768).detach().cpu().tolist())
     
     if hasattr(model, "module"):
         model.module.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
