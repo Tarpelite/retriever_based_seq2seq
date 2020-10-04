@@ -644,7 +644,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         #     res = torch.tensor(self.features[x].tolist())
         #     print(res)
             # relevant_doc_features.append(res)
-        relevant_doc_features = [[torch.tensor(y).to(input_ids.device) for y in self.features[x].tolist()] for x in I]
+        relevant_doc_features = [self.features[x].tolist() for x in I]
         return relevant_scores, I, relevant_doc_features
 
 
