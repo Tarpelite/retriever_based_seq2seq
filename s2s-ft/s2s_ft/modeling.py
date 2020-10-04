@@ -715,6 +715,8 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         source_ids = torch.tensor(source_ids, dtype=torch.long)
         target_ids = torch.tensor(target_ids, dtype=torch.long)
         pseudo_ids = torch.tensor(pseudo_ids, dtype=torch.long)
+        num_source_tokens = torch.tensor(num_source_tokens,dtype=torch.long)
+        num_target_tokens = torch.tensor(num_target_tokens, dtype=torch.long)
         
         
         source_len = source_ids.size(1)
