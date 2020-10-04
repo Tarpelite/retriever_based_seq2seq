@@ -743,7 +743,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         attention_mask.to(self.bert.device)
         token_type_ids.to(self.bert.device)
         position_ids.to(self.bert.device)
-        split_lengths.to(self.bert.device)
+        split_lengths = (x.to(self.bert.device) for x in split_lengths)
         outputs = self.bert(
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
             position_ids=position_ids, split_lengths=split_lengths)
