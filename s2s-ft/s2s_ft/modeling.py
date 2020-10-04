@@ -768,7 +768,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         
         pseudo_sequence_output = pseudo_sequence_output.view(relevant_scores.size(0), -1 , self.config.hidden_size)
         print(pseudo_sequence_output.shape)
-        print(target_ids.shape)
+        target_ids = target_ids[0].unsqueeze(0)
         prediction_scores_masked = self.cls(pseudo_sequence_output)
         if self.crit_mask_lm_smoothed:
             masked_lm_loss = self.crit_mask_lm_smoothed(
