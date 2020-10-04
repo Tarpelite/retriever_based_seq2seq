@@ -611,7 +611,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         self.doc_embeds = doc_embeds.view(-1, self.config.hidden_size).cpu().numpy()
         indexs_IP.add(self.doc_embeds)  
         self.indexs = indexs_IP
-        self.features = np.array(self.features)
+        self.features = np.array([x["input_ids"] for x in self.features])
         return indexs_IP
     
     def get_embeds(self, input_ids):
@@ -637,7 +637,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         relevant_doc_embeds = torch.stack([torch.from_numpy(self.doc_embeds[x]) for x in I]).to(input_ids.device)
         relevant_distance = torch.bmm(relevant_doc_embeds, pooler_output.unsqueeze(-1)).squeeze(-1) # do Inner Product
         relevant_scores = self.softmax(relevant_distance)
-        relevant_doc_features = torch.stack([torch.from_numpy(self.features[x]["input_ids"]) for x in I]).to(input_ids.device)
+        relevant_doc_features = torch.stack([torch.from_numpy(self.features[x]) for x in I]).to(input_ids.device)
         return relevant_scores, I, relevant_doc_features
 
 
