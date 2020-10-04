@@ -773,6 +773,8 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         prediction_scores_masked = self.cls(pseudo_sequence_output)
         #print(prediction_scores_masked.shape)
         #print(target_ids.shape)
+        print(target_mask)
+        print(target_mask.shape)
         if self.crit_mask_lm_smoothed:
             masked_lm_loss = self.crit_mask_lm_smoothed(
                 F.log_softmax(prediction_scores_masked.float(), dim=-1), target_ids)
