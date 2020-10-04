@@ -376,7 +376,7 @@ class Concator:
             target_id = target_id.tolist()
             for d_id in documents_id:
                 s_ids = self.__trunk([self.cls_id] + query_id + d_id, self.max_source_len)
-                t_ids = self._trunk(target_id, self.max_target_len)
+                t_ids = self.__trunk(target_id, self.max_target_len)
                 pseudo_ids = []
                 for tk_id in target_ids:
                     p = random.random()
