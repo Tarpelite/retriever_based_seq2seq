@@ -20,6 +20,7 @@ from .utils import Concator
 from s2s_ft.config import BertForSeq2SeqConfig
 from s2s_ft.convert_state_dict import get_checkpoint_from_transformer_cache, state_dict_convert
 import faiss
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -610,7 +611,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         self.doc_embeds = doc_embeds.view(-1, self.config.hidden_size).cpu().numpy()
         indexs_IP.add(self.doc_embeds)  
         self.indexs = indexs_IP
-        self.features = self.features.numpy()
+        self.features = np.array(self.features)
         return indexs_IP
     
     def get_embeds(self, input_ids):
