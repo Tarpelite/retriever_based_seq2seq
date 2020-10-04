@@ -704,7 +704,10 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
             input_ids = source_ids
         )
         # reconstruct source ids and target_ids
-        
+        print(source_ids.shape)
+        print(target_ids.shape)
+        print(len(num_source_tokens))
+        print(len(num_target_tokens))
         source_ids, target_ids, pseudo_ids, num_source_tokens, num_target_tokens = self.concator.concate(source_ids, relevant_doc_features, target_ids, num_source_tokens, num_target_tokens)
         source_ids = torch.tensor(source_ids, dtype=torch.long)
         target_ids = torch.tensor(target_ids, dtype=torch.long)
