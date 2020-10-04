@@ -740,11 +740,12 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
             target_span_ids = target_position_ids
         attention_mask = self.create_attention_mask(source_mask, target_mask, source_position_ids, target_span_ids)
         device = torch.device("cuda")
-        input_ids.to(device)
-        attention_mask.to(device)
-        token_type_ids.to(device)
-        position_ids.to(device)
+        input_ids = input_ids.to(device)
+        attention_mask = attention_mask.to(device)
+        token_type_ids = token_type_ids.to(device)
+        position_ids = position_ids.to(device)
         split_lengths = (x.to(device) for x in split_lengths)
+        
         outputs = self.bert(
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
             position_ids=position_ids, split_lengths=split_lengths)
