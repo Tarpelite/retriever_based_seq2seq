@@ -46,17 +46,17 @@ class BertPreTrainedForSeq2SeqModel(BertPreTrainedModel):
     supported_convert_pretrained_model_archive_map = {
         "bert": BERT_PRETRAINED_MODEL_ARCHIVE_MAP,
         "roberta": ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP,
-        "xlm-roberta": XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP, 
-        "unilm": UNILM_PRETRAINED_MODEL_ARCHIVE_MAP, 
-        "minilm": MINILM_PRETRAINED_MODEL_ARCHIVE_MAP, 
+        "xlm-roberta": XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP,
+        "unilm": UNILM_PRETRAINED_MODEL_ARCHIVE_MAP,
+        "minilm": MINILM_PRETRAINED_MODEL_ARCHIVE_MAP,
     }
     base_model_prefix = "bert_for_seq2seq"
     pretrained_model_archive_map = {
         **ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP,
-        **XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP, 
+        **XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP,
         **BERT_PRETRAINED_MODEL_ARCHIVE_MAP,
         **UNILM_PRETRAINED_MODEL_ARCHIVE_MAP,
-        **MINILM_PRETRAINED_MODEL_ARCHIVE_MAP, 
+        **MINILM_PRETRAINED_MODEL_ARCHIVE_MAP,
     }
 
     def _init_weights(self, module):
@@ -397,7 +397,7 @@ class BertModel(BertPreTrainedForSeq2SeqModel):
 
         if attention_mask is None:
             attention_mask = torch.ones(input_shape, device=device)
-            
+
             # extended_attention_mask = attention_mask[:, None, None, :]
         # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
         # ourselves in which case we just need to make it broadcastable to all heads.
@@ -599,7 +599,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         self.features = features
         self.softmax = torch.nn.Softmax(dim=-1)
         self.config = config
-    
+
     def build_indexs_from_embeds(self, doc_embeds):
         d = self.config.hidden_size
         print("Building indexs")
@@ -609,11 +609,11 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         #     indexs_IP = faiss.index_cpu_to_gpu(res, 0, indexs_IP)
         # print(doc_embeds.shape)
         self.doc_embeds = doc_embeds.view(-1, self.config.hidden_size).cpu().numpy()
-        indexs_IP.add(self.doc_embeds)  
+        indexs_IP.add(self.doc_embeds)
         self.indexs = indexs_IP
         self.features = np.array([x["input_ids"] for x in self.features])
         return indexs_IP
-    
+
     def get_embeds(self, input_ids):
         outputs = self.bert(
             input_ids)
@@ -624,9 +624,9 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         # print(sequence_output.shape)
         pooler_output = sequence_output[:,0,:].contiguous().view(-1)
         return pooler_output
-        
-    
-        
+
+
+
     def forward(self, input_ids, attention_mask=None, token_type_ids =None, position_ids=None, inputs_embeds=None, split_lengths=None, top_k=5):
         outputs = self.bert(
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,inputs_embeds=inputs_embeds,
@@ -683,7 +683,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
             base_position_matrix = base_position_matrix + offset.view(-1, 1)
         position_ids = base_position_matrix * mask
         return mask, position_ids
-    
+
     @staticmethod
     def create_attention_mask(source_mask, target_mask, source_position_ids, target_span_ids):
         weight = torch.cat((torch.zeros_like(source_position_ids), target_span_ids, -target_span_ids), dim=1)
@@ -697,7 +697,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
 
         return (true_tokens_mask | pseudo_tokens_mask).type_as(source_mask)
 
-    
+
     def forward(self, source_ids, target_ids, num_source_tokens, num_target_tokens,pseudo_ids=None, target_span_ids=None):
         # note that here the source ids must not include any pseudo labels
         relevant_scores, _, relevant_doc_features = self.retrieval(
@@ -717,8 +717,8 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         pseudo_ids = torch.tensor(pseudo_ids, dtype=torch.long)
         num_source_tokens = torch.tensor(num_source_tokens,dtype=torch.long)
         num_target_tokens = torch.tensor(num_target_tokens, dtype=torch.long)
-        
-        
+
+
         source_len = source_ids.size(1)
         target_len = target_ids.size(1)
         pseudo_len = pseudo_ids.size(1)
@@ -746,7 +746,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         position_ids = position_ids.to(device)
         target_ids = target_ids.to(device)
         # split_lengths = (x.to(device) for x in split_lengths)
-        
+
         outputs = self.bert(
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
             position_ids=position_ids, split_lengths=split_lengths)
@@ -758,14 +758,14 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
             loss = loss * mask
             denominator = torch.sum(mask) + 1e-5
             return (loss / denominator).sum()
-        
+
         # make prediction based on sofmax relevant scores
         relevant_scores.to(self.bert.device)
         pseudo_sequence_output = pseudo_sequence_output.view(relevant_scores.size(0), self.top_k, -1)
-        # print(relevant_scores.shape)
-        # print(pseudo_sequence_output.shape)
-        pseudo_sequence_output = torch.bmm(relevant_scores.unsqueeze(0), pseudo_sequence_output)
-        
+        print(relevant_scores.shape)
+        print(pseudo_sequence_output.shape)
+        pseudo_sequence_output = torch.bmm(relevant_scores.unsqueeze(1), pseudo_sequence_output)
+
         pseudo_sequence_output = pseudo_sequence_output.view(relevant_scores.size(0), -1 , self.config.hidden_size)
         # print(pseudo_sequence_output.shape)
         target_ids = target_ids[0].unsqueeze(0)
@@ -778,7 +778,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
                 prediction_scores_masked.transpose(1, 2).float(), target_ids)
         pseudo_lm_loss = loss_mask_and_normalize(
             masked_lm_loss.float(), target_mask)
-        
+
         return pseudo_lm_loss
 
 
@@ -788,10 +788,10 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
 
 
 
-        
-        
 
 
 
 
-        
+
+
+
