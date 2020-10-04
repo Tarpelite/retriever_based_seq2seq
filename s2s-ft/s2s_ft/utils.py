@@ -372,10 +372,9 @@ class Concator:
         for query_id, documents_id, target_id, num_src_tokens, num_tgt_tokens in zip(query_ids, documents_ids, target_ids, num_source_tokens, num_target_tokens):
             query_id = query_id[:num_src_tokens]
             target_id = target_id[:num_tgt_tokens]
-            query_id = torch.tensor(query_id)
-            target_id = torch.tensor(target_id)
+            query_id = query_id.tolist()
+            target_id = target_id.tolist()
             for d_id in documents_id:
-                d_id = torch.tensor(d_id)
                 s_ids = self.__trunk([self.cls_id] + query_id + d_id, self.max_source_len)
                 t_ids = self._trunk(target_id, self.max_target_len)
                 pseudo_ids = []
