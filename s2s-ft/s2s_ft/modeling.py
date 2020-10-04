@@ -752,7 +752,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
             position_ids=position_ids, split_lengths=split_lengths)
         sequence_output = outputs[0] # [batch_size * top_k ,sequence_length, embeddings]
         pseudo_sequence_output = sequence_output[:, source_len + target_len:, ] #[batch_size * top_k, sequence_length, embeddings]
-        print(pseudo_sequence_output.shape)
+        # print(pseudo_sequence_output.shape)
         def loss_mask_and_normalize(loss, mask):
             mask = mask.type_as(loss)
             loss = loss * mask
@@ -767,7 +767,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         pseudo_sequence_output = torch.bmm(relevant_scores.unsqueeze(0), pseudo_sequence_output)
         
         pseudo_sequence_output = pseudo_sequence_output.view(relevant_scores.size(0), -1 , self.config.hidden_size)
-        print(pseudo_sequence_output.shape)
+        # print(pseudo_sequence_output.shape)
         target_ids = target_ids[0].unsqueeze(0)
         prediction_scores_masked = self.cls(pseudo_sequence_output)
         if self.crit_mask_lm_smoothed:
