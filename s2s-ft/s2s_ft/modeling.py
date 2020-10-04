@@ -760,7 +760,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         # make prediction based on sofmax relevant scores
         relevant_scores.to(self.bert.device)
         pseudo_sequence_output = pseudo_sequence_output.view(relevant_scores.size(0), self.top_k,pseudo_sequence_output.size(1), -1)
-        print(relevant_scores.features)
+        print(relevant_scores.shape)
         print(pseudo_sequence_output.shape)
         pseudo_sequence_output = torch.bmm(relevant_scores.unsqueeze(1), pseudo_sequence_output)
         prediction_scores_masked = self.cls(pseudo_sequence_output)
