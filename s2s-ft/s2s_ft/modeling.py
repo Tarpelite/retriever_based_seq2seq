@@ -638,13 +638,13 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         relevant_distance = torch.bmm(relevant_doc_embeds, pooler_output.unsqueeze(-1)).squeeze(-1) # do Inner Product
         relevant_scores = self.softmax(relevant_distance)
         relevant_doc_features = []
-        for x in I:
-            print(x)
-            print(self.features[x].tolist())
-            res = torch.tensor(self.features[x].tolist())
-            print(res)
-            relevant_doc_features.append(res)
-        # relevant_doc_features = [torch.tensor(self.features[x].tolist()).to(input_ids.device) for x in I]
+        # for x in I:
+        #     print(x)
+        #     print(self.features[x].tolist())
+        #     res = torch.tensor(self.features[x].tolist())
+        #     print(res)
+            # relevant_doc_features.append(res)
+        relevant_doc_features = [[torch.tensor(y).to(input_ids.device) for y in self.features[x].tolist()] for x in I]
         return relevant_scores, I, relevant_doc_features
 
 
