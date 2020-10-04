@@ -640,7 +640,7 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         relevant_doc_features = []
         for x in I:
             print(x)
-            print(self.features[x])
+            print(self.features[x].tolist())
             res = torch.tensor(self.features[x].tolist())
             print(res)
             relevant_doc_features.append(res)
