@@ -8,7 +8,7 @@ import glob
 import torch
 import tqdm
 import torch.utils.data
-from pudb import set_trace
+# from pudb import set_trace
 
 
 logger = logging.getLogger(__name__)
@@ -368,7 +368,7 @@ class Concator:
         new_num_source_tokens = []
         new_num_target_tokens = []
         new_span_ids = []
-        set_trace()
+        # set_trace()
         for query_id, documents_id, target_id, num_src_tokens, num_tgt_tokens in zip(query_ids, documents_ids, target_ids, num_source_tokens, num_target_tokens):
             query_id = query_id[:num_src_tokens]
             target_id = target_id[:num_tgt_tokens]
@@ -378,7 +378,7 @@ class Concator:
                 s_ids = self.__trunk([self.cls_id] + query_id + [self.sep_id] + d_id, self.max_source_len)
                 t_ids = self.__trunk(target_id, self.max_target_len)
                 pseudo_ids = []
-                for tk_id in target_ids:
+                for tk_id in t_ids:
                     p = random.random()
                     if p < self.keep_prob:
                         pseudo_ids.append(tk_id)
