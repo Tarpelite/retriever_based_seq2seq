@@ -661,7 +661,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
 
         self.log_softmax = nn.LogSoftmax()
 
-        self.source_type_ids = config.source_type_id
+        self.source_type_id = config.source_type_id
         self.target_type_id = config.target_type_id
 
         if config.label_smoothing > 0:
@@ -710,8 +710,8 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         # print(len(num_target_tokens))
         # print(len(relevant_doc_features))
         source_ids, target_ids, pseudo_ids, num_source_tokens, num_target_tokens = self.concator.concate(source_ids, relevant_doc_features, target_ids, num_source_tokens, num_target_tokens)
-        print(source_ids)
-        print(pseudo_ids)
+        # print(source_ids)
+        # print(pseudo_ids)
         source_ids = torch.tensor(source_ids, dtype=torch.long)
         target_ids = torch.tensor(target_ids, dtype=torch.long)
         pseudo_ids = torch.tensor(pseudo_ids, dtype=torch.long)
