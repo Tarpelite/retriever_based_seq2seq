@@ -72,7 +72,7 @@ def main():
     parser.add_argument("--config_path", default=None, type=str,
                         help="Path to config.json for the model.")
 
-    parser.add_argument("--embedding_model_path", default=None, type=str, required=True)
+    # parser.add_argument("--embedding_model_path", default=None, type=str, required=True)
     parser.add_argument("--doc_file", default=None, type=str, required=True)
     parser.add_argument("--top_k", default=5, type=int)
     # tokenizer_name
