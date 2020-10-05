@@ -211,7 +211,7 @@ def main():
             example_file=args.doc_file, tokenizer=tokenizer, local_rank=-1, cached_doc_features_file=args.cache_feature_file
         )
 
-        model.reieval.features = doc_features
+        model.retrieval.features = doc_features
 
 
         doc_dataset = utils.RetrievalSeq2SeqDocDatasetForBert(
