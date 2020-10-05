@@ -16,7 +16,9 @@ from transformers.modeling_bert import BERT_PRETRAINED_MODEL_ARCHIVE_MAP
 from transformers.modeling_distilbert import DISTILBERT_PRETRAINED_MODEL_ARCHIVE_MAP
 from transformers.modeling_xlm_roberta import XLM_ROBERTA_PRETRAINED_MODEL_ARCHIVE_MAP
 
-from .utils import Concator
+
+from .utils import Concator, load_and_cache_doc_examples
+
 from s2s_ft.config import BertForSeq2SeqConfig
 from s2s_ft.convert_state_dict import get_checkpoint_from_transformer_cache, state_dict_convert
 import faiss
@@ -646,6 +648,8 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
             # relevant_doc_features.append(res)
         relevant_doc_features = [self.features[x].tolist() for x in I]
         return relevant_scores, I, relevant_doc_features
+    
+    
 
 
 
@@ -760,7 +764,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
             return (loss / denominator).sum()
 
         # make prediction based on sofmax relevant scores
-        relevant_scores.to(self.bert.device)
+        # relevant_scores.to(self.bert.device)
         pseudo_sequence_output = pseudo_sequence_output.view(relevant_scores.size(0), self.top_k, -1)
         #print(relevant_scores.shape)
         #print(pseudo_sequence_output.shape)

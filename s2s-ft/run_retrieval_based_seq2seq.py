@@ -19,6 +19,7 @@ except:
 import tqdm
 
 from s2s_ft.modeling import BertForRetrievalSeq2Seq, BertForRetrieval
+
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import \
     RobertaConfig, BertConfig, \
@@ -161,17 +162,17 @@ def train(args, training_features, doc_features, model, tokenizer):
     doc_iterator = tqdm.tqdm(
             doc_dataloader, initial=global_step,
             desc="Embeding docs:", disable=args.local_rank not in [-1, 0])
-    all_embdes = []
+    all_embeds = []
     model.eval()
     model.zero_grad()
     for step, batch in enumerate(doc_iterator):
         batch = tuple(t.to(args.device) for t in batch)
         with torch.no_grad():
             embeds = model.module.retrieval.get_embeds(batch[0]) if hasattr(model, "module") else model.retrieval.get_embeds(batch[0])
-        all_embdes.extend(embeds.view(-1, 768).detach().cpu().tolist())
+        all_embeds.extend(embeds.view(-1, 768).detach().cpu().tolist())
     
     if hasattr(model, "module"):
-        model.module.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
+        model.module.retrieval.doc_embeds = torch.tensor(all_embeds, dtype=torch.float32)    
 
         model.module.retrieval.build_indexs_from_embeds(model.module.retrieval.doc_embeds)
     else:
