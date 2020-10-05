@@ -216,7 +216,7 @@ def main():
 
         doc_dataset = utils.RetrievalSeq2seqDocDatasetForBert(
             features=doc_features, max_source_len = args.max_seq_length - args.max_tgt_length-2, max_target_len=args.max_tgt_length, vocab_size=tokenizer.vocab_size, cls_id=tokenizer.cls_token_id, sep_id=tokenizer.sep_token_id, pad_id=tokenizer.pad_token_id,
-            mask_id=tokenizer.mask_token_id, random_prob=args.random_prob, keep_prob=args.keep_prob,
+            mask_id=tokenizer.mask_token_id, random_prob=0.15, keep_prob=0.1,
             offset=0,
             num_training_instances=len(doc_features)
         )
