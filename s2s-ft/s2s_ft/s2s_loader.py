@@ -178,8 +178,8 @@ class DecoderConcator:
         # we make all of this docs into one batch (top_k * batch)
         new_tokens_a = []
         new_max_a_len = []
-        for tokens_sent_a, tokens_doc in zip(tokens_a, tokens_topk_docs):
-            tokens_a_concate = tokens_sent_a + tokens_doc
+        for tokens_doc in tokens_topk_docs:
+            tokens_a_concate = tokens_a + tokens_doc
             new_tokens_a.append(tokens_a_concate)
             new_max_a_len = max(len(tokens_a_concate), new_max_a_len)
         # tokens_a = sorted(new_tokens_a, key=lambda x: -len(x))
@@ -245,7 +245,7 @@ class DecoderConcator:
     def make_query_id(self, tokens_a):
         padded_tokens_a = [self.cls_token] + tokens_a + [self.sep_token]
         input_ids = self.indexer(padded_tokens_a)
-        return torch.tensor(input_ids, dtype=torch.long)
+        return input_ids
 
 
         
