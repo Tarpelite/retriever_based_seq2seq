@@ -176,7 +176,7 @@ def train(args, training_features, doc_features, model, tokenizer):
 
         model.module.retrieval.build_indexs_from_embeds(model.module.retrieval.doc_embeds)
     else:
-        model.retrieval.doc_embeds = torch.tensor(all_embdes, dtype=torch.float32)    
+        model.retrieval.doc_embeds = torch.tensor(all_embeds, dtype=torch.float32)    
 
         model.retrieval.build_indexs_from_embeds(model.retrieval.doc_embeds)
 
