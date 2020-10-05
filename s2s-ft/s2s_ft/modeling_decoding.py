@@ -1772,7 +1772,7 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
         # tokens_a (sequence_len, hidden_size)
         query_ids = self.concator.make_query_id(query_tokens)
         relevant_scores, _, relevant_doc_features = self.retrieval(
-            input_ids = query_ids.unsqueeze(1)
+            input_ids = query_ids.unsqueeze(0)
         )
 
         input_ids, token_type_ids, position_ids, attention_mask, task_idx, mask_qkv = self.concator.concate(query_ids, relevant_doc_features)
