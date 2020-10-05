@@ -243,7 +243,7 @@ def main():
         model.zero_grad()
 
         for step, batch in enumerate(doc_iterator):
-            batch = tuple(t.to(args.device) for t in batch)
+            batch = tuple(t.to(model.device) for t in batch)
             with torch.no_grad():
                 embeds = model.module.retrieval.get_embeds(batch[0]) if hasattr(model, "module") else model.retrieval.get_embeds(batch[0])
             all_embeds.extend(embeds.view(-1, 768).detach().cpu().tolist())
