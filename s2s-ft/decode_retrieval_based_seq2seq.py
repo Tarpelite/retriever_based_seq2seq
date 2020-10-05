@@ -230,7 +230,7 @@ def main():
 
         doc_iterator = tqdm.tqdm(
             doc_dataloader, initial=0,
-            desc="Embeding docs:", disable=args.local_rank not in [-1, 0])
+            desc="Embeding docs:", disable=False)
 
         all_embeds = []
 
