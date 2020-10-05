@@ -1771,13 +1771,19 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
     def forward(self, query_tokens):
         # tokens_a (sequence_len, hidden_size)
         query_ids = self.concator.make_query_id(query_tokens)
-
-        query_ids = query_ids.to(self.bert.device)
+        device = torch.device("cuda")
+        query_ids = query_ids.to(device)
         relevant_scores, _, relevant_doc_features = self.retrieval(
             input_ids = query_ids.unsqueeze(0)
         )
 
         input_ids, token_type_ids, position_ids, attention_mask, task_idx, mask_qkv = self.concator.concate(query_ids, relevant_doc_features)
+
+        input_ids = input_ids.to(device)
+        token_type_ids = token_type_ids.to(device)
+        position_ids = position_ids.to(device)
+        attention_mask = attention_mask.to(device)
+        mask_qkv = mask_qkv.to(device)
 
         if self.search_beam_size > 1:
             return self.beam_search(input_ids, token_type_ids, position_ids, attention_mask, task_idx=task_idx, mask_qkv=mask_qkv)
