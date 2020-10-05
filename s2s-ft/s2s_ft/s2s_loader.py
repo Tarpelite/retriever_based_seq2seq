@@ -6,7 +6,7 @@ import math
 import logging
 import torch
 import torch.utils.data
-
+from pudb import set_trace
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +123,7 @@ class Preprocess4Seq2seqDecoder(Pipeline):
         for i in range(max_a_len + 2, max_len_in_batch):
             position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
+        set_trace()
         # Token Indexing
         input_ids = self.indexer(tokens)
 
