@@ -228,7 +228,7 @@ def main():
             collate_fn=utils.batch_list_to_batch_tensors
         )
 
-        doc_iterator = tqdm.tqdm(
+        doc_iterator = tqdm(
             doc_dataloader, initial=0,
             desc="Embeding docs:", disable=False)
 
