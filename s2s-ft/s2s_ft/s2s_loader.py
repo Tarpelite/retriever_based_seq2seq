@@ -177,7 +177,7 @@ class DecoderConcator:
         # for each tokens_a, we may find top_k support documents
         # we make all of this docs into one batch (top_k * batch)
         new_tokens_a = []
-        new_max_a_len = []
+        new_max_a_len = 0
         for tokens_doc in tokens_topk_docs:
             tokens_a_concate = tokens_a + tokens_doc
             new_tokens_a.append(tokens_a_concate)
