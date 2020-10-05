@@ -19,7 +19,7 @@ from torch.utils.data import (DataLoader, SequentialSampler)
 
 from transformers import BertTokenizer, RobertaTokenizer
 from s2s_ft.modeling_decoding import BertForRetrievalSeq2SeqDecoder, BertConfig
-from s2s_ft.modeling import BertForRetrieval
+from s2s_ft.modeling import BertForRetrieval, BertForRetrievalSeq2Seq
 from transformers.tokenization_bert import whitespace_tokenize
 import s2s_ft.s2s_loader as seq2seq_loader
 from s2s_ft.s2s_loader import DecoderConcator
@@ -172,12 +172,7 @@ def main():
     logger.info("Read decoding config from: %s" % config_file)
     config = BertConfig.from_json_file(config_file)
 
-    bi_uni_pipeline = []
-    # bi_uni_pipeline.append(seq2seq_loader.Preprocess4Seq2seqDecoder(
-    #     list(vocab.keys()), tokenizer.convert_tokens_to_ids, args.max_seq_length,
-    #     max_tgt_length=args.max_tgt_length, pos_shift=args.pos_shift,
-    #     source_type_id=config.source_type_id, target_type_id=config.target_type_id,
-    #     cls_token=tokenizer.cls_token, sep_token=tokenizer.sep_token, pad_token=tokenizer.pad_token))
+    
 
     concator = DecoderConcator(
         list(vocab.keys()), tokenizer.convert_tokens_to_ids, args.max_seq_length,

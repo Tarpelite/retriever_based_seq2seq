@@ -1741,7 +1741,7 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
                  pos_shift=False):
         super(BertForRetrievalSeq2SeqDecoder, self).__init__(config)
         self.bert = BertModelIncr(config)
-        self.retrieval  = BertForRetrieval.from_pretrained(None, config=config)
+        self.retrieval  = BertForRetrieval(config)
         self.concator = concator
         self.cls = BertPreTrainingHeads(
             config, self.bert.embeddings.word_embeddings.weight, num_labels=num_labels)

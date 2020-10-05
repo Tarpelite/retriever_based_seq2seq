@@ -626,6 +626,8 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
         # print(sequence_output.shape)
         pooler_output = sequence_output[:,0,:].contiguous().view(-1)
         return pooler_output
+    
+    
 
 
 
