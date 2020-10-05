@@ -208,7 +208,7 @@ def main():
         )
 
         doc_features = utils.load_and_cache_doc_examples(
-            example_file=args.doc_file, tokenizer=tokenizer, local_rank=0, cache_doc_features_file=args.cache_feature_file
+            example_file=args.doc_file, tokenizer=tokenizer, local_rank=0, cached_doc_features_file=args.cache_feature_file
         )
 
         model.reieval.features = doc_features
