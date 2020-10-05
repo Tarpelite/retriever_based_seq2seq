@@ -146,3 +146,90 @@ class Preprocess4Seq2seqDecoder(Pipeline):
             self._tril_matrix[:second_end-second_st, :second_end-second_st])
 
         return (input_ids, segment_ids, position_ids, input_mask, mask_qkv, self.task_idx)
+
+class DecoderConcator:
+    def __init__(self, vocab_words, indexer, max_len=512, max_tgt_length=128, 
+                 mode="s2s", pos_shift=False, source_type_id=0, target_type_id=1, 
+                 cls_token='[CLS]', sep_token='[SEP]', pad_token='[PAD]'):
+        super().__init__()
+        self.max_len = max_len
+        self.vocab_words = vocab_words  # vocabulary (sub)words
+        self.indexer = indexer  # function from token to token index
+        self.max_len = max_len
+        self._tril_matrix = torch.tril(torch.ones((max_len, max_len), dtype=torch.long))
+        self.task_idx = 3   # relax projection layer for different tasks
+        assert mode in ("s2s", "l2r")
+        self.mode = mode
+        self.max_tgt_length = max_tgt_length
+        self.pos_shift = pos_shift
+
+        self.cls_token = cls_token
+        self.sep_token = sep_token
+        self.pad_token = pad_token
+
+        self.source_type_id = source_type_id
+        self.target_type_id = target_type_id
+
+        self.cc = 0
+    
+    def concate(self,tokens_a, tokens_topk_docs, max_a_len):
+        
+        # for each tokens_a, we may find top_k support documents
+        # we make all of this docs into one batch (top_k * batch)
+        new_tokens_a = []
+        new_max_a_len = max_a_len
+        for tokens_sent_a, tokens_doc in zip(tokens_a, tokens_topk_docs):
+            tokens_a_concate = tokens_sent_a + tokens_doc
+            new_tokens_a.append(tokens_a_concate)
+            new_max_a_len = max(len(tokens_a_concate), new_max_a_len)
+        tokens_a = sorted(new_tokens_a, key=lambda x: -len(x))
+        max_a_len = new_max_a_len 
+
+        padded_tokens_a = [self.cls_token] + tokens_a + [self.sep_token]
+        assert len(padded_tokens_a) <= max_a_len + 2
+        if max_a_len + 2 > len(padded_tokens_a):
+            padded_tokens_a += [self.pad_token] * \
+                (max_a_len + 2 - len(padded_tokens_a))
+        assert len(padded_tokens_a) == max_a_len + 2
+        max_len_in_batch = min(self.max_tgt_length +
+                               max_a_len + 2, self.max_len)
+        tokens = padded_tokens_a
+        segment_ids = [self.source_type_id] * (len(padded_tokens_a)) \
+                + [self.target_type_id] * (max_len_in_batch - len(padded_tokens_a))
+
+        mask_qkv = None
+
+        position_ids = []
+        for i in range(len(tokens_a) + 2):
+            position_ids.append(i)
+        for i in range(len(tokens_a) + 2, max_a_len + 2):
+            position_ids.append(0)
+        for i in range(max_a_len + 2, max_len_in_batch):
+            position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
+
+        # Token Indexing
+        input_ids = self.indexer(tokens)
+
+        self.cc += 1
+        if self.cc < 20:
+            logger.info("Input src = %s" % " ".join(self.vocab_words[tk_id] for tk_id in input_ids))
+
+        # Zero Padding
+        input_mask = torch.zeros(
+            max_len_in_batch, max_len_in_batch, dtype=torch.long)
+        if self.mode == "s2s":
+            input_mask[:, :len(tokens_a)+2].fill_(1)
+        else:
+            st, end = 0, len(tokens_a) + 2
+            input_mask[st:end, st:end].copy_(
+                self._tril_matrix[:end, :end])
+            input_mask[end:, :len(tokens_a)+2].fill_(1)
+        second_st, second_end = len(padded_tokens_a), max_len_in_batch
+
+        input_mask[second_st:second_end, second_st:second_end].copy_(
+            self._tril_matrix[:second_end-second_st, :second_end-second_st])
+
+        return (input_ids, segment_ids, position_ids, input_mask, mask_qkv, self.task_idx)
+
+
+        
