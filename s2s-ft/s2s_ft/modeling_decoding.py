@@ -124,7 +124,7 @@ class BertConfig(object):
                  label_smoothing=None,
                  num_qkv=0,
                  seg_emb=False,
-                 source_type_id=0, 
+                 source_type_id=0,
                  target_type_id=1,
                  no_segment_embedding=False, **kwargs):
         """Constructs BertConfig.
@@ -1741,7 +1741,7 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
                  pos_shift=False):
         super(BertForRetrievalSeq2SeqDecoder, self).__init__(config)
         self.bert = BertModelIncr(config)
-        self.retrieval  = BertForRetrieval(config)
+        self.retrieval  = BertForRetrieval.from_pretrained(None, config=config)
         self.concator = concator
         self.cls = BertPreTrainingHeads(
             config, self.bert.embeddings.word_embeddings.weight, num_labels=num_labels)
@@ -1820,12 +1820,12 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
             last_hidden = new_encoded_layers[-1][:, -1:, :]
             prediction_scores, _ = self.cls(
                 last_hidden, None, task_idx=task_idx)
-            
+
             # prediction_score -> [top_k, seq_len, vocab_size]
             # relevant_scores -> [top_k, 1]
             vocab_size = prediction_scores.size(-1)
             pooled_prediction_scores = torch.matmul(relevant_scores.view(-1), prediction_scores.view(relevant_scores.size(1), -1)).view(1, -1, vocab_size)
-            
+
             _, max_ids = torch.max(pooled_prediction_scores, dim=-1)
             output_ids.append(max_ids)
 

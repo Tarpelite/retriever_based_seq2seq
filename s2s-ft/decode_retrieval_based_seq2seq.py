@@ -19,9 +19,10 @@ from torch.utils.data import (DataLoader, SequentialSampler)
 
 from transformers import BertTokenizer, RobertaTokenizer
 from s2s_ft.modeling_decoding import BertForRetrievalSeq2SeqDecoder, BertConfig
-from s2s_ft.modeling import BertForRetrival
+from s2s_ft.modeling import BertForRetrieval
 from transformers.tokenization_bert import whitespace_tokenize
-import s2s_ft.s2s_loader as seq2seq_loader, DecoderConcator
+import s2s_ft.s2s_loader as seq2seq_loader
+from s2s_ft.s2s_loader import DecoderConcator
 from s2s_ft import utils
 from transformers import \
     BertTokenizer, RobertaTokenizer
@@ -76,7 +77,7 @@ def main():
     parser.add_argument("--doc_file", default=None, type=str, required=True)
     parser.add_argument("--top_k", default=5, type=int)
     # tokenizer_name
-    parser.add_argument("--tokenizer_name", default=None, type=str, required=True, 
+    parser.add_argument("--tokenizer_name", default=None, type=str, required=True,
                         help="tokenizer name")
     parser.add_argument("--max_seq_length", default=512, type=int,
                         help="The maximum total input sequence length after WordPiece tokenization. \n"
@@ -155,9 +156,9 @@ def main():
         torch.manual_seed(random_seed)
         if n_gpu > 0:
             torch.cuda.manual_seed_all(args.seed)
-    
+
     tokenizer = TOKENIZER_CLASSES[args.model_type].from_pretrained(
-        args.tokenizer_name, do_lower_case=args.do_lower_case, 
+        args.tokenizer_name, do_lower_case=args.do_lower_case,
         cache_dir=args.cache_dir if args.cache_dir else None)
 
     if args.model_type == "roberta":
@@ -175,13 +176,13 @@ def main():
     # bi_uni_pipeline.append(seq2seq_loader.Preprocess4Seq2seqDecoder(
     #     list(vocab.keys()), tokenizer.convert_tokens_to_ids, args.max_seq_length,
     #     max_tgt_length=args.max_tgt_length, pos_shift=args.pos_shift,
-    #     source_type_id=config.source_type_id, target_type_id=config.target_type_id, 
+    #     source_type_id=config.source_type_id, target_type_id=config.target_type_id,
     #     cls_token=tokenizer.cls_token, sep_token=tokenizer.sep_token, pad_token=tokenizer.pad_token))
-    
+
     concator = DecoderConcator(
         list(vocab.keys()), tokenizer.convert_tokens_to_ids, args.max_seq_length,
         max_tgt_length=args.max_tgt_length, pos_shift=args.pos_shift,
-        source_type_id=config.source_type_id, target_type_id=config.target_type_id, 
+        source_type_id=config.source_type_id, target_type_id=config.target_type_id,
         cls_token=tokenizer.cls_token, sep_token=tokenizer.sep_token, pad_token=tokenizer.pad_token
     )
 
@@ -206,7 +207,7 @@ def main():
             length_penalty=args.length_penalty, eos_id=eos_word_ids, sos_id=sos_word_id,
             forbid_duplicate_ngrams=args.forbid_duplicate_ngrams, forbid_ignore_set=forbid_ignore_set,
             ngram_size=args.ngram_size, min_len=args.min_len, mode=args.mode,
-            max_position_embeddings=args.max_seq_length, pos_shift=args.pos_shift, 
+            max_position_embeddings=args.max_seq_length, pos_shift=args.pos_shift,
         )
 
         doc_features = utils.load_and_cache_doc_examples(
@@ -215,7 +216,7 @@ def main():
 
         model.reieval.features = doc_features
 
-        
+
         doc_dataset = utils.RetrievalSeq2SeqDocDatasetForBert(
             features=doc_features, max_source_len = args.max_seq_length - args.max_tgt_length-2, max_target_len=args.max_target_seq_length, vocab_size=tokenizer.vocab_size, cls_id=tokenizer.cls_token_id, sep_id=tokenizer.sep_token_id, pad_id=tokenizer.pad_token_id,
             mask_id=tokenizer.mask_token_id, random_prob=args.random_prob, keep_prob=args.keep_prob,
@@ -233,9 +234,9 @@ def main():
         doc_iterator = tqdm.tqdm(
             doc_dataloader, initial=0,
             desc="Embeding docs:", disable=args.local_rank not in [-1, 0])
-        
+
         all_embeds = []
-        
+
         if args.fp16:
             model.half()
         model.to(device)
@@ -249,18 +250,18 @@ def main():
             with torch.no_grad():
                 embeds = model.module.retrieval.get_embeds(batch[0]) if hasattr(model, "module") else model.retrieval.get_embeds(batch[0])
             all_embeds.extend(embeds.view(-1, 768).detach().cpu().tolist())
-        
+
         if hasattr(model, "module"):
-            model.module.retrieval.doc_embeds = torch.tensor(all_embeds, dtype=torch.float32)    
+            model.module.retrieval.doc_embeds = torch.tensor(all_embeds, dtype=torch.float32)
 
             model.module.retrieval.build_indexs_from_embeds(model.module.retrieval.doc_embeds)
         else:
-            model.retrieval.doc_embeds = torch.tensor(all_embeds, dtype=torch.float32)    
+            model.retrieval.doc_embeds = torch.tensor(all_embeds, dtype=torch.float32)
 
             model.retrieval.build_indexs_from_embeds(model.retrieval.doc_embeds)
-        
+
         logger.info("start Decoding")
-        
+
 
         torch.cuda.empty_cache()
         model.eval()
@@ -268,7 +269,7 @@ def main():
         max_src_length = args.max_seq_length - 2 - args.max_tgt_length
 
         to_pred = utils.load_and_cache_examples(
-            args.input_file, tokenizer, local_rank=-1, 
+            args.input_file, tokenizer, local_rank=-1,
             cached_features_file=None, shuffle=False)
 
         input_lines = []
@@ -299,7 +300,7 @@ def main():
 
             #     instances = []
                 # for instance in buf:
-                    
+
                 # for instance in [(x, max_a_len) for x in buf]:
                 #     for proc in bi_uni_pipeline:
                 #         instances.append(proc(instance))
@@ -311,7 +312,7 @@ def main():
                     # input_ids, token_type_ids, position_ids, input_mask, mask_qkv, task_idx = batch
                     # traces = model(input_ids, token_type_ids,
                     #                position_ids, input_mask, task_idx=task_idx, mask_qkv=mask_qkv)
-                    
+
                     traces = model(line)
                     if args.beam_size > 1:
                         traces = {k: v.tolist() for k, v in traces.items()}
