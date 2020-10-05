@@ -276,8 +276,8 @@ def main():
             logger.info("Decoding subset: %d", args.subset)
             input_lines = input_lines[:args.subset]
 
-        input_lines = sorted(list(enumerate(input_lines)),
-                             key=lambda x: -len(x[1]))
+        # input_lines = sorted(list(enumerate(input_lines)),
+        #                      key=lambda x: -len(x[1]))
         output_lines = [""] * len(input_lines)
         score_trace_list = [None] * len(input_lines)
         # total_batch = math.ceil(len(input_lines) / args.batch_size)
