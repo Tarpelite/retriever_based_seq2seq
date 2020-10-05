@@ -18,6 +18,7 @@ from torch.utils.data import (DataLoader, SequentialSampler)
 
 
 from transformers import BertTokenizer, RobertaTokenizer
+from transformers import BertConfig as RetrievalConfig
 from s2s_ft.modeling_decoding import BertForRetrievalSeq2SeqDecoder, BertConfig
 from s2s_ft.modeling import BertForRetrieval, BertForRetrievalSeq2Seq
 from transformers.tokenization_bert import whitespace_tokenize
@@ -171,6 +172,7 @@ def main():
     config_file = args.config_path if args.config_path else os.path.join(args.model_path, "config.json")
     logger.info("Read decoding config from: %s" % config_file)
     config = BertConfig.from_json_file(config_file)
+    retrieval_config = RetrievalConfig.from_json_file(config_file)
 
     
 
@@ -198,7 +200,7 @@ def main():
         logger.info("***** Recover model: %s *****", model_recover_path)
         found_checkpoint_flag = True
         model = BertForRetrievalSeq2SeqDecoder.from_pretrained(
-            model_recover_path, config=config, mask_word_id=mask_word_id, search_beam_size=args.beam_size, concator=concator, top_k=args.top_k,
+            model_recover_path, config=config, r_config=retrieval_config,mask_word_id=mask_word_id, search_beam_size=args.beam_size, concator=concator, top_k=args.top_k,
             length_penalty=args.length_penalty, eos_id=eos_word_ids, sos_id=sos_word_id,
             forbid_duplicate_ngrams=args.forbid_duplicate_ngrams, forbid_ignore_set=forbid_ignore_set,
             ngram_size=args.ngram_size, min_len=args.min_len, mode=args.mode,

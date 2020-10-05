@@ -1735,13 +1735,13 @@ class BertForSeq2SeqDecoder(PreTrainedBertModel):
 class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
     """refer to BertForPreTraining"""
 
-    def __init__(self, config, concator:DecoderConcator, mask_word_id=0, num_labels=2, num_rel=0,
+    def __init__(self, config, r_config, concator:DecoderConcator, mask_word_id=0, num_labels=2, num_rel=0,
                  search_beam_size=1, length_penalty=1.0, eos_id=0, sos_id=0,
                  forbid_duplicate_ngrams=False, forbid_ignore_set=None, ngram_size=3, min_len=0, mode="s2s", top_k=5,
                  pos_shift=False):
         super(BertForRetrievalSeq2SeqDecoder, self).__init__(config)
         self.bert = BertModelIncr(config)
-        self.retrieval  = BertForRetrieval(config)
+        self.retrieval  = BertForRetrieval(r_config)
         self.concator = concator
         self.cls = BertPreTrainingHeads(
             config, self.bert.embeddings.word_embeddings.weight, num_labels=num_labels)
