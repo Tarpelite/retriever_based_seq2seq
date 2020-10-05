@@ -244,7 +244,8 @@ class DecoderConcator:
     
     def make_query_id(self, tokens_a):
         padded_tokens_a = [self.cls_token] + tokens_a + [self.sep_token]
-        return torch.tensor(padded_tokens_a, dtype=torch.long)
+        input_ids = self.indexer(padded_tokens_a)
+        return torch.tensor(input_ids, dtype=torch.long)
 
 
         
