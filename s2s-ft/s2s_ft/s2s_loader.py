@@ -124,6 +124,7 @@ class Preprocess4Seq2seqDecoder(Pipeline):
             position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
         set_trace()
+        
         # Token Indexing
         input_ids = self.indexer(tokens)
 
