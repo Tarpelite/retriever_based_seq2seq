@@ -25,7 +25,7 @@ from .s2s_loader import DecoderConcator
 from transformers.file_utils import cached_path
 
 from torch.nn.modules.loss import _Loss
-
+from pudb import set_trace
 
 class LabelSmoothingLoss(_Loss):
     """
@@ -1802,7 +1802,7 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
         next_pos = input_length
         if self.pos_shift:
             sos_ids = input_ids.new(batch_size, 1).fill_(self.sos_id)
-
+        set_trace()
         while next_pos < output_length:
             curr_length = list(curr_ids.size())[1]
 
@@ -1815,6 +1815,8 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
                     start_pos = next_pos
             else:
                 start_pos = next_pos - curr_length
+                print(curr_ids.shape)
+                print(mask_ids.shape)
                 x_input_ids = torch.cat((curr_ids, mask_ids), dim=1)
 
             curr_token_type_ids = token_type_ids[:, start_pos:next_pos+1]
