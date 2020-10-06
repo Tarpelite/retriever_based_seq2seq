@@ -1815,7 +1815,7 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
                     start_pos = next_pos
             else:
                 start_pos = next_pos - curr_length
-                print(curr_ids.shape)
+                # print(curr_ids.shape)
                 x_input_ids = torch.cat((curr_ids, mask_ids), dim=1)
 
             curr_token_type_ids = token_type_ids[:, start_pos:next_pos+1]
