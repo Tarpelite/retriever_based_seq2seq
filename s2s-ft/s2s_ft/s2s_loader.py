@@ -172,7 +172,7 @@ class DecoderConcator:
 
         self.source_type_id = source_type_id
         self.target_type_id = target_type_id
-        self_cls_token_id = self.indexer([cls_token])[0]
+        self.cls_token_id = self.indexer([cls_token])[0]
         self.sep_token_id = self.indexer([sep_token])[0]
 
         self.cc = 0
