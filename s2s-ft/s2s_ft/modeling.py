@@ -656,9 +656,13 @@ class BertForRetrieval(BertPreTrainedForSeq2SeqModel):
 
 
 class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
-    def __init__(self, config, retrieval:BertForRetrieval, concator:Concator = None, top_k=5) -> None:
+    def __init__(self, config, retrieval, concator:Concator = None, top_k=5) -> None:
         super(BertForRetrievalSeq2Seq, self).__init__(config)
-        self.retrieval = retrieval
+        if type(retrieval) == type(config):
+            self.retrieval = BertForRetrieval.from_pretrained(config)
+        else:
+            self.retrival = retrieval
+            
         self.concator = concator
         self.top_k = top_k
         self.bert = BertModel(config)

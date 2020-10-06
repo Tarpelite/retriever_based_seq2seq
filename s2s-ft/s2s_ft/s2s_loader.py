@@ -110,6 +110,7 @@ class Preprocess4Seq2seqDecoder(Pipeline):
         max_len_in_batch = min(self.max_tgt_length +
                                max_a_len + 2, self.max_len)
         tokens = padded_tokens_a
+        # print(tokens)
         segment_ids = [self.source_type_id] * (len(padded_tokens_a)) \
                 + [self.target_type_id] * (max_len_in_batch - len(padded_tokens_a))
 
@@ -123,8 +124,8 @@ class Preprocess4Seq2seqDecoder(Pipeline):
         for i in range(max_a_len + 2, max_len_in_batch):
             position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
-        set_trace()
-        
+        # set_trace()
+
         # Token Indexing
         input_ids = self.indexer(tokens)
 
@@ -171,6 +172,8 @@ class DecoderConcator:
 
         self.source_type_id = source_type_id
         self.target_type_id = target_type_id
+        self.cls_token_id = self.indexer([cls_token])[0]
+        self.sep_token_id = self.indexer([sep_token])[0]
 
         self.cc = 0
     
@@ -180,11 +183,15 @@ class DecoderConcator:
         # we make all of this docs into one batch (top_k * batch)
         new_tokens_a = []
         new_max_a_len = 0
+        tokens_topk_docs = tokens_topk_docs[0]
         for tokens_doc in tokens_topk_docs:
             tokens_a_concate = tokens_a + tokens_doc
+            if len(tokens_a_concate) > self.max_src_len:
+                tokens_a_concate = tokens_a_concate[:self.max_src_len] + [self.sep_token_id]
             new_tokens_a.append(tokens_a_concate)
             new_max_a_len = max(len(tokens_a_concate), new_max_a_len)
         # tokens_a = sorted(new_tokens_a, key=lambda x: -len(x))
+
         max_a_len = new_max_a_len 
         all_input_ids = []
         all_segment_ids = []
@@ -193,7 +200,7 @@ class DecoderConcator:
         all_mask_qkv = []
 
         for tokens_a in new_tokens_a:
-            padded_tokens_a = [self.cls_token] + tokens_a + [self.sep_token]
+            padded_tokens_a =  tokens_a 
             assert len(padded_tokens_a) <= max_a_len + 2
             if max_a_len + 2 > len(padded_tokens_a):
                 padded_tokens_a += [self.pad_token] * \
@@ -215,6 +222,7 @@ class DecoderConcator:
             for i in range(max_a_len + 2, max_len_in_batch):
                 position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
+            set_trace()
             # Token Indexing
             input_ids = self.indexer(tokens)
             # Zero Padding
