@@ -218,7 +218,7 @@ class DecoderConcator:
             for i in range(max_a_len + 2, max_len_in_batch):
                 position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
-            # set_trace()
+            set_trace()
             # Token Indexing
             input_ids = self.indexer(tokens)
             # Zero Padding
