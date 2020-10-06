@@ -186,9 +186,12 @@ class DecoderConcator:
         tokens_topk_docs = tokens_topk_docs[0]
         for tokens_doc in tokens_topk_docs:
             tokens_a_concate = tokens_a + tokens_doc
+            if len(tokens_a_concate) > self.max_src_len:
+                tokens_a_concate = tokens_a_concate[:self.max_src_len] + [self.sep_token_id]
             new_tokens_a.append(tokens_a_concate)
             new_max_a_len = max(len(tokens_a_concate), new_max_a_len)
         # tokens_a = sorted(new_tokens_a, key=lambda x: -len(x))
+
         max_a_len = new_max_a_len 
         all_input_ids = []
         all_segment_ids = []
