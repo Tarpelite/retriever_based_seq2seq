@@ -172,6 +172,8 @@ class DecoderConcator:
 
         self.source_type_id = source_type_id
         self.target_type_id = target_type_id
+        self_cls_token_id = self.indexer([cls_token])[0]
+        self.sep_token_id = self.indexer([sep_token])[0]
 
         self.cc = 0
     
@@ -194,7 +196,7 @@ class DecoderConcator:
         all_mask_qkv = []
 
         for tokens_a in new_tokens_a:
-            padded_tokens_a = [self.cls_token] + tokens_a + [self.sep_token]
+            padded_tokens_a = [self.cls_token_id] + tokens_a + [self.sep_token_id]
             assert len(padded_tokens_a) <= max_a_len + 2
             if max_a_len + 2 > len(padded_tokens_a):
                 padded_tokens_a += [self.pad_token] * \
@@ -216,7 +218,7 @@ class DecoderConcator:
             for i in range(max_a_len + 2, max_len_in_batch):
                 position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
-            set_trace()
+            # set_trace()
             # Token Indexing
             input_ids = self.indexer(tokens)
             # Zero Padding
