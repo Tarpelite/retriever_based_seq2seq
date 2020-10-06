@@ -3,7 +3,7 @@ MODEL_PATH=/data/question_generation/models/newsqa_ft_with_retrieval/ckpt-32000
 SPLIT=dev
 # input file that you would like to decode
 INPUT_JSON=/data/question_generation/newsqa/${SPLIT}.json
-DOC_FILE=/data/question_generation/newsqa/docs.txt
+DOC_FILE=/data/question_generation/newsqa/docs.debug
 CACHE_DOC_PATH=${MODEL_PATH}/cache_newsqa_doc
 
 export CUDA_VISIBLE_DEVICES=0

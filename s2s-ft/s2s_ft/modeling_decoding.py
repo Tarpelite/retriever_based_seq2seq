@@ -1783,7 +1783,7 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
         token_type_ids = token_type_ids.to(device)
         position_ids = position_ids.to(device)
         attention_mask = attention_mask.to(device)
-        mask_qkv = mask_qkv.to(device)
+        #mask_qkv = mask_qkv.to(device)
 
         if self.search_beam_size > 1:
             return self.beam_search(input_ids, token_type_ids, position_ids, attention_mask, task_idx=task_idx, mask_qkv=mask_qkv)
