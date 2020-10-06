@@ -1802,7 +1802,7 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
         next_pos = input_length
         if self.pos_shift:
             sos_ids = input_ids.new(batch_size, 1).fill_(self.sos_id)
-        set_trace()
+        # set_trace()
         while next_pos < output_length:
             curr_length = list(curr_ids.size())[1]
 
@@ -1861,7 +1861,8 @@ class BertForRetrievalSeq2SeqDecoder(PreTrainedBertModel):
                 else:
                     prev_encoded_layers = [torch.cat((x[0], x[1][:, :-1, :]), dim=1)
                                            for x in zip(prev_encoded_layers, new_encoded_layers)]
-            curr_ids = torch.cat((curr_ids, max_ids.expand(curr_ids.size(0), 1)), dim=1)
+            # curr_ids = torch.cat((curr_ids, max_ids.expand(curr_ids.size(0), 1)), dim=1)
+            curr_ids = max_ids.expand(curr_ids.size(0), 1)
             next_pos += 1
 
         return torch.cat(output_ids, dim=1)
