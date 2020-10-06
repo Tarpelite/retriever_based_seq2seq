@@ -110,6 +110,7 @@ class Preprocess4Seq2seqDecoder(Pipeline):
         max_len_in_batch = min(self.max_tgt_length +
                                max_a_len + 2, self.max_len)
         tokens = padded_tokens_a
+        # print(tokens)
         segment_ids = [self.source_type_id] * (len(padded_tokens_a)) \
                 + [self.target_type_id] * (max_len_in_batch - len(padded_tokens_a))
 
@@ -123,8 +124,8 @@ class Preprocess4Seq2seqDecoder(Pipeline):
         for i in range(max_a_len + 2, max_len_in_batch):
             position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
-        set_trace()
-        
+        # set_trace()
+
         # Token Indexing
         input_ids = self.indexer(tokens)
 
@@ -215,6 +216,7 @@ class DecoderConcator:
             for i in range(max_a_len + 2, max_len_in_batch):
                 position_ids.append(i - (max_a_len + 2) + len(tokens_a) + 2)
 
+            set_trace()
             # Token Indexing
             input_ids = self.indexer(tokens)
             # Zero Padding
