@@ -247,8 +247,8 @@ class DecoderConcator:
         input_ids = torch.tensor(all_input_ids, dtype=torch.long)
         segment_ids = torch.tensor(all_segment_ids, dtype=torch.long)
         position_ids = torch.tensor(all_position_ids, dtype=torch.long)
-        input_mask = torch.tensor(all_input_mask, dtype=torch.long)
-        mask_qkv = torch.tensor(all_mask_qkv, dtype=torch.long)
+        input_mask = torch.stack(all_input_mask)
+        mask_qkv = None
         return (input_ids, segment_ids, position_ids, input_mask, mask_qkv, self.task_idx)
  
     def make_query_id(self, tokens_a):
