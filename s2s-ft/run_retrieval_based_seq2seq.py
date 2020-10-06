@@ -163,6 +163,7 @@ def train(args, training_features, doc_features, model, tokenizer):
             doc_dataloader, initial=global_step,
             desc="Embeding docs:", disable=args.local_rank not in [-1, 0])
     all_embeds = []
+
     model.eval()
     model.zero_grad()
     for step, batch in enumerate(doc_iterator):
@@ -181,6 +182,24 @@ def train(args, training_features, doc_features, model, tokenizer):
         model.retrieval.build_indexs_from_embeds(model.retrieval.doc_embeds)
 
     logger.info("start training")
+
+    if args.ckpt_path:
+        logger.info("continue training from %s"%args.ckpt_path)
+        config_class, tokenizer_class = MODEL_CLASSES[args.model_type]
+        model_config = config_class.from_pretrained(
+            args.config_name if args.config_name else args.model_name_or_path,
+            cache_dir=args.cache_dir if args.cache_dir else None)
+        config = BertForSeq2SeqConfig.from_exist_config(
+            config=model_config, label_smoothing=args.label_smoothing,
+            max_position_embeddings=args.max_source_seq_length + args.max_target_seq_length)
+        model = BertForRetrievalSeq2Seq.from_pretrained(
+        args.ckpt_path, config=config, model_type=args.model_type,
+        reuse_position_embedding=True, retrieval=config,
+        cache_dir=args.cache_dir if args.cache_dir else None)
+
+        
+
+
 
     logger.info("Check dataset:")
     for i in range(5):
@@ -317,6 +336,7 @@ def get_args():
     parser.add_argument("--max_target_seq_length", default=48, type=int,
                         help="The maximum total target sequence length after WordPiece tokenization. Sequences "
                              "longer than this will be truncated, and sequences shorter than this will be padded.")
+    parser.add_argument("--ckpt_path", default=None, type=str)
 
     parser.add_argument("--cached_train_features_file", default=None, type=str,
                         help="Cached training features file")
