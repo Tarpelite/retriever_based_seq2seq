@@ -661,7 +661,7 @@ class BertForRetrievalSeq2Seq(BertPreTrainedForSeq2SeqModel):
         if type(retrieval) == type(config):
             self.retrieval = BertForRetrieval.from_pretrained(config)
         else:
-            self.retrival = retrieval
+            self.retrieval = retrieval
             
         self.concator = concator
         self.top_k = top_k
