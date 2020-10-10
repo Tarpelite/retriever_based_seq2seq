@@ -210,7 +210,7 @@ def main():
         )
 
         embedding_model = BertForRetrieval.from_pretrained(
-            args.embedding_model_path, config=config, model_type=args.model_type, reuse_position_embedding=True,cache_dir=None
+            args.embedding_model_path, config=retrieval_config, model_type=args.model_type, reuse_position_embedding=True, cache_dir=None
         )
 
         doc_features = utils.load_and_cache_doc_examples(
@@ -310,13 +310,6 @@ def main():
                 #     for proc in bi_uni_pipeline:
                 #         instances.append(proc(instance))
                 with torch.no_grad():
-                    # batch = seq2seq_loader.batch_list_to_batch_tensors(
-                    #     instances)
-                    # batch = [
-                    #     t.to(device) if t is not None else None for t in batch]
-                    # input_ids, token_type_ids, position_ids, input_mask, mask_qkv, task_idx = batch
-                    # traces = model(input_ids, token_type_ids,
-                    #                position_ids, input_mask, task_idx=task_idx, mask_qkv=mask_qkv)
 
                     traces = model(line)
                     if args.beam_size > 1:
